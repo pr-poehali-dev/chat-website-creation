@@ -15,6 +15,7 @@ const mockChats = [
   { id: 2, name: 'Максим Петров', avatar: '🚀', lastMessage: 'Спасибо за помощь!', time: '11:20', unread: 0, online: true },
   { id: 3, name: 'Ольга Сидорова', avatar: '📚', lastMessage: 'До встречи завтра', time: 'Вчера', unread: 1, online: false },
   { id: 4, name: 'Дмитрий Ковалёв', avatar: '💼', lastMessage: 'Отправил документы', time: '2 дня назад', unread: 0, online: false },
+  { id: 5, name: 'Мария Кузнецова', avatar: '🌟', lastMessage: 'Отличная идея!', time: '10:30', unread: 2, online: true },
 ];
 
 const mockContacts = [
@@ -23,6 +24,7 @@ const mockContacts = [
   { id: 3, name: 'Ольга Сидорова', avatar: '📚', status: 'Писатель', online: false },
   { id: 4, name: 'Дмитрий Ковалёв', avatar: '💼', status: 'Менеджер', online: false },
   { id: 5, name: 'Елена Смирнова', avatar: '🎭', status: 'Актриса', online: true },
+  { id: 6, name: 'Мария Кузнецова', avatar: '🌟', status: 'Маркетолог', online: true },
 ];
 
 export default function Index() {
