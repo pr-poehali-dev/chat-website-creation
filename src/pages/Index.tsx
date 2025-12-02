@@ -353,46 +353,12 @@ export default function Index() {
                     />
                   </div>
                   <div>
-                    <Label>Аватар</Label>
-                    <div className="flex items-center gap-3">
-                      {(avatarPreview || avatar) && (
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                          {avatarPreview ? (
-                            <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-2xl">{avatar}</span>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setAvatarFile(file);
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setAvatarPreview(reader.result as string);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          className="cursor-pointer"
-                        />
-                      </div>
-                    </div>
+                    <Label>Аватар (эмодзи)</Label>
                     <Input
                       value={avatar}
-                      onChange={(e) => {
-                        setAvatar(e.target.value);
-                        setAvatarPreview('');
-                        setAvatarFile(null);
-                      }}
-                      placeholder="👤 или загрузите фото"
+                      onChange={(e) => setAvatar(e.target.value)}
+                      placeholder="👤"
                       maxLength={2}
-                      className="mt-2"
                     />
                   </div>
                 </>
@@ -748,41 +714,15 @@ export default function Index() {
                     <h3 className="font-medium mb-4">Профиль</h3>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                          {avatarPreview ? (
-                            <img src={avatarPreview} alt="Предпросмотр" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-3xl">{currentUser.avatar}</span>
-                          )}
-                        </div>
+                        <Avatar className="w-16 h-16">
+                          <AvatarFallback className="text-3xl">{currentUser.avatar}</AvatarFallback>
+                        </Avatar>
                         <div className="flex-1">
-                          <Label>Аватар</Label>
-                          <div className="flex gap-2 mt-2">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  setAvatarFile(file);
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    setAvatarPreview(reader.result as string);
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                              className="cursor-pointer flex-1"
-                            />
-                          </div>
+                          <Label>Аватар (эмодзи)</Label>
                           <Input
                             value={avatar}
-                            onChange={(e) => {
-                              setAvatar(e.target.value);
-                              setAvatarPreview('');
-                              setAvatarFile(null);
-                            }}
-                            placeholder="👤 или загрузите фото"
+                            onChange={(e) => setAvatar(e.target.value)}
+                            placeholder="👤"
                             maxLength={2}
                             className="mt-2"
                           />
@@ -799,7 +739,6 @@ export default function Index() {
                       <Button 
                         onClick={async () => {
                           try {
-                            const newAvatar = avatarPreview || avatar;
                             await fetch(API.users, {
                               method: 'PUT',
                               headers: {
@@ -808,15 +747,12 @@ export default function Index() {
                               },
                               body: JSON.stringify({
                                 display_name: displayName,
-                                avatar: newAvatar,
+                                avatar: avatar,
                               }),
                             });
-                            const updatedUser = { ...currentUser, display_name: displayName, avatar: newAvatar };
+                            const updatedUser = { ...currentUser, display_name: displayName, avatar: avatar };
                             setCurrentUser(updatedUser);
                             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-                            setAvatarPreview('');
-                            setAvatarFile(null);
-                            setAvatar(newAvatar);
                           } catch (err) {
                             console.error(err);
                           }
