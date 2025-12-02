@@ -83,6 +83,11 @@ export default function Index() {
     if (currentUser) {
       loadChats();
       loadUsers();
+      updateOnlineStatus();
+      const interval = setInterval(() => {
+        updateOnlineStatus();
+      }, 30000);
+      return () => clearInterval(interval);
     }
   }, [currentUser]);
 
@@ -160,11 +165,45 @@ export default function Index() {
     }
   };
 
+  const updateOnlineStatus = async () => {
+    if (!currentUser) return;
+    try {
+      await fetch(API.users, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(currentUser.id),
+        },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const syncContacts = async (contacts: string[]) => {
+    if (!currentUser) return;
+    try {
+      await fetch(API.users, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(currentUser.id),
+        },
+        body: JSON.stringify({ contacts }),
+      });
+      loadUsers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const loadUsers = async (search = '') => {
     if (!currentUser) return;
     try {
       const url = search ? `${API.users}?search=${encodeURIComponent(search)}` : API.users;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { 'X-User-Id': String(currentUser.id) },
+      });
       const data = await res.json();
       setUsers(data.users.filter((u: any) => u.id !== currentUser.id));
     } catch (err) {
@@ -473,12 +512,19 @@ export default function Index() {
                   <button onClick={() => { setSelectedChat(null); setActiveTab('messages'); }} className="md:hidden">
                     <Icon name="ArrowLeft" size={24} />
                   </button>
-                  <Avatar>
-                    <AvatarFallback className="text-2xl">{selectedChatData?.avatar}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar>
+                      <AvatarFallback className="text-2xl">{selectedChatData?.avatar}</AvatarFallback>
+                    </Avatar>
+                    {users.find(u => u.id === selectedChat)?.online && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></span>
+                    )}
+                  </div>
                   <div>
                     <h3 className="font-medium">{selectedChatData?.name}</h3>
-                    <p className="text-xs text-muted-foreground">{selectedChatData?.status}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {users.find(u => u.id === selectedChat)?.online ? 'В сети' : selectedChatData?.status}
+                    </p>
                   </div>
                 </div>
 
@@ -601,14 +647,20 @@ export default function Index() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarFallback className="text-2xl">{user.avatar}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-medium">{user.name}</h3>
-                            <p className="text-sm text-muted-foreground">{user.status}</p>
+                          <div className="relative">
+                            <Avatar>
+                              <AvatarFallback className="text-2xl">{user.avatar}</AvatarFallback>
+                            </Avatar>
+                            {user.online && (
+                              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></span>
+                            )}
                           </div>
-                          {user.online && <Badge variant="secondary" className="ml-auto">Онлайн</Badge>}
+                          <div className="flex-1">
+                            <h3 className="font-medium">{user.name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {user.online ? 'В сети' : user.status}
+                            </p>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -734,6 +786,47 @@ export default function Index() {
                         Сохранить изменения
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+                <Card className="mb-6">
+                  <CardContent className="p-6">
+                    <h3 className="font-medium mb-4">Контакты</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Синхронизируйте контакты из телефонной книги, чтобы видеть друзей в приложении
+                    </p>
+                    <input
+                      type="file"
+                      accept=".vcf,text/vcard"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const text = event.target?.result as string;
+                            const phoneRegex = /TEL[^:]*:([+\d\s()-]+)/g;
+                            const phones: string[] = [];
+                            let match;
+                            while ((match = phoneRegex.exec(text)) !== null) {
+                              phones.push(match[1].replace(/[\s()-]/g, ''));
+                            }
+                            if (phones.length > 0) {
+                              syncContacts(phones);
+                            }
+                          };
+                          reader.readAsText(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="contacts-upload"
+                    />
+                    <Button 
+                      onClick={() => document.getElementById('contacts-upload')?.click()}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Icon name="Upload" size={20} className="mr-2" />
+                      Загрузить контакты
+                    </Button>
                   </CardContent>
                 </Card>
                 <Card>

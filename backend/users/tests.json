@@ -1,9 +1,12 @@
 {
   "tests": [
     {
-      "name": "Get all users",
+      "name": "Get contacts",
       "method": "GET",
       "path": "/",
+      "headers": {
+        "X-User-Id": "1"
+      },
       "expectedStatus": 200,
       "expectedBody": {
         "users": "array"
