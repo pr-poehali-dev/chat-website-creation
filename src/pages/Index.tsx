@@ -563,9 +563,13 @@ export default function Index() {
                     <h3 className="font-medium mb-4">Профиль</h3>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <Avatar className="w-16 h-16">
-                          <AvatarFallback className="text-3xl">{currentUser.avatar}</AvatarFallback>
-                        </Avatar>
+                        <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                          {avatarPreview ? (
+                            <img src={avatarPreview} alt="Предпросмотр" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-3xl">{currentUser.avatar}</span>
+                          )}
+                        </div>
                         <div className="flex-1">
                           <Label>Аватар</Label>
                           <div className="flex gap-2 mt-2">
