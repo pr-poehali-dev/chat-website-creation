@@ -126,10 +126,11 @@ export default function Index() {
     }
   };
 
-  const loadUsers = async () => {
+  const loadUsers = async (search = '') => {
     if (!currentUser) return;
     try {
-      const res = await fetch(API.users);
+      const url = search ? `${API.users}?search=${encodeURIComponent(search)}` : API.users;
+      const res = await fetch(url);
       const data = await res.json();
       setUsers(data.users.filter((u: any) => u.id !== currentUser.id));
     } catch (err) {
@@ -272,9 +273,16 @@ export default function Index() {
     );
   }
 
-  const filteredUsers = users.filter((u) =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    if (activeTab === 'search' && currentUser) {
+      const timer = setTimeout(() => {
+        loadUsers(searchQuery);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, activeTab]);
+
+  const filteredUsers = users;
 
   const totalUnread = chats.reduce((sum, chat) => sum + chat.unread, 0);
 
@@ -436,12 +444,15 @@ export default function Index() {
             {activeTab === 'search' && (
               <div className="flex-1 overflow-y-auto p-6">
                 <h2 className="text-2xl font-bold mb-4">Поиск</h2>
-                <Input
-                  placeholder="Поиск контактов..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="mb-6"
-                />
+                <div className="relative mb-6">
+                  <Icon name="Search" size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Поиск по имени или нику..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
                 <div className="space-y-2">
                   {filteredUsers.map((user) => (
                     <Card
