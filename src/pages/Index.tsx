@@ -378,13 +378,24 @@ export default function Index() {
               
               {!isLogin && (
                 <div className="pt-4 border-t">
-                  <p className="text-xs text-muted-foreground text-center mb-2">Быстрая регистрация:</p>
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    {['🎨', '🚀', '📚', '💼', '🎭', '⚡', '🌟', '🎯'].map((emoji) => (
+                  <p className="text-xs text-muted-foreground text-center mb-3">Выберите аватар:</p>
+                  <div className="grid grid-cols-8 gap-2">
+                    {[
+                      '😊', '😎', '🥰', '😇', '🤗', '🤩', '😺', '🐶',
+                      '🐱', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸',
+                      '🦊', '🐻', '🐰', '🦄', '🐲', '🦋', '🐝', '🦉',
+                      '🌟', '⭐', '✨', '💫', '🔥', '⚡', '🌈', '☀️',
+                      '🌙', '💖', '💝', '💗', '💓', '💕', '💞', '💘',
+                      '🎨', '🎭', '🎪', '🎬', '🎮', '🎯', '🎲', '🎸',
+                      '🚀', '✈️', '⛵', '🏎️', '🚁', '🛸', '🎡', '🎢',
+                      '🍕', '🍔', '🍦', '🍰', '🍩', '🍪', '☕', '🍹',
+                      '⚽', '🏀', '🎾', '🏐', '🏈', '⚾', '🎳', '🏆',
+                      '📚', '💼', '🎓', '👑', '💎', '🎁', '🎈', '🎉'
+                    ].map((emoji) => (
                       <button
                         key={emoji}
                         onClick={() => setAvatar(emoji)}
-                        className="w-10 h-10 text-2xl hover:scale-110 transition-transform"
+                        className={`w-10 h-10 text-2xl hover:scale-110 transition-transform rounded-lg hover:bg-muted ${avatar === emoji ? 'bg-primary/20 scale-110' : ''}`}
                       >
                         {emoji}
                       </button>
@@ -713,19 +724,44 @@ export default function Index() {
                   <CardContent className="p-6">
                     <h3 className="font-medium mb-4">Профиль</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="w-16 h-16">
-                          <AvatarFallback className="text-3xl">{currentUser.avatar}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <Label>Аватар (эмодзи)</Label>
-                          <Input
-                            value={avatar}
-                            onChange={(e) => setAvatar(e.target.value)}
-                            placeholder="👤"
-                            maxLength={2}
-                            className="mt-2"
-                          />
+                      <div>
+                        <div className="flex items-center gap-4 mb-3">
+                          <Avatar className="w-16 h-16">
+                            <AvatarFallback className="text-3xl">{avatar || currentUser.avatar}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <Label>Аватар (эмодзи)</Label>
+                            <Input
+                              value={avatar}
+                              onChange={(e) => setAvatar(e.target.value)}
+                              placeholder="👤"
+                              maxLength={2}
+                              className="mt-2"
+                            />
+                          </div>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <p className="text-xs text-muted-foreground mb-2">Выберите из галереи:</p>
+                          <div className="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto">
+                            {[
+                              '😊', '😎', '🥰', '😇', '🤗', '🤩', '😺', '🐶',
+                              '🐱', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸',
+                              '🦊', '🐻', '🐰', '🦄', '🐲', '🦋', '🐝', '🦉',
+                              '🌟', '⭐', '✨', '💫', '🔥', '⚡', '🌈', '☀️',
+                              '🌙', '💖', '💝', '💗', '💓', '💕', '💞', '💘',
+                              '🎨', '🎭', '🎪', '🎬', '🎮', '🎯', '🎲', '🎸',
+                              '🚀', '✈️', '⛵', '🏎️', '🚁', '🛸', '🎡', '🎢',
+                              '🍕', '🍔', '🍦', '🍰', '🍩', '🍪', '☕', '🍹'
+                            ].map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={() => setAvatar(emoji)}
+                                className={`w-8 h-8 text-xl hover:scale-110 transition-transform rounded ${avatar === emoji ? 'bg-primary/20 scale-110' : 'hover:bg-background'}`}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       <div>
