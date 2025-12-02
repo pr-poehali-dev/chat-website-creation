@@ -614,6 +614,7 @@ export default function Index() {
                       <Button 
                         onClick={async () => {
                           try {
+                            const newAvatar = avatarPreview || avatar;
                             await fetch(API.users, {
                               method: 'PUT',
                               headers: {
@@ -622,11 +623,15 @@ export default function Index() {
                               },
                               body: JSON.stringify({
                                 display_name: displayName,
-                                avatar: avatar,
+                                avatar: newAvatar,
                               }),
                             });
-                            setCurrentUser({ ...currentUser, display_name: displayName, avatar });
-                            localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, display_name: displayName, avatar }));
+                            const updatedUser = { ...currentUser, display_name: displayName, avatar: newAvatar };
+                            setCurrentUser(updatedUser);
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                            setAvatarPreview('');
+                            setAvatarFile(null);
+                            setAvatar(newAvatar);
                           } catch (err) {
                             console.error(err);
                           }
