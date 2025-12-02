@@ -84,8 +84,21 @@ export default function Index() {
   useEffect(() => {
     if (currentUser && selectedChat) {
       loadMessages(selectedChat);
+      const interval = setInterval(() => {
+        loadMessages(selectedChat);
+      }, 3000);
+      return () => clearInterval(interval);
     }
   }, [currentUser, selectedChat]);
+
+  useEffect(() => {
+    if (currentUser && activeTab === 'messages') {
+      const interval = setInterval(() => {
+        loadChats();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, activeTab]);
 
   const handleAuth = async () => {
     setError('');
