@@ -48,6 +48,8 @@ interface Message {
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLogin, setIsLogin] = useState(true);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -249,12 +251,46 @@ export default function Index() {
                     />
                   </div>
                   <div>
-                    <Label>Аватар (эмодзи)</Label>
+                    <Label>Аватар</Label>
+                    <div className="flex items-center gap-3">
+                      {(avatarPreview || avatar) && (
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                          {avatarPreview ? (
+                            <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">{avatar}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAvatarFile(file);
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setAvatarPreview(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    </div>
                     <Input
                       value={avatar}
-                      onChange={(e) => setAvatar(e.target.value)}
-                      placeholder="👤"
+                      onChange={(e) => {
+                        setAvatar(e.target.value);
+                        setAvatarPreview('');
+                        setAvatarFile(null);
+                      }}
+                      placeholder="👤 или загрузите фото"
                       maxLength={2}
+                      className="mt-2"
                     />
                   </div>
                 </>
