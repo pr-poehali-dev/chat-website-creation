@@ -558,6 +558,82 @@ export default function Index() {
             {activeTab === 'settings' && (
               <div className="flex-1 overflow-y-auto p-6">
                 <h2 className="text-2xl font-bold mb-6">Настройки</h2>
+                <Card className="mb-6">
+                  <CardContent className="p-6">
+                    <h3 className="font-medium mb-4">Профиль</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="w-16 h-16">
+                          <AvatarFallback className="text-3xl">{currentUser.avatar}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <Label>Аватар</Label>
+                          <div className="flex gap-2 mt-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setAvatarFile(file);
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setAvatarPreview(reader.result as string);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="cursor-pointer flex-1"
+                            />
+                          </div>
+                          <Input
+                            value={avatar}
+                            onChange={(e) => {
+                              setAvatar(e.target.value);
+                              setAvatarPreview('');
+                              setAvatarFile(null);
+                            }}
+                            placeholder="👤 или загрузите фото"
+                            maxLength={2}
+                            className="mt-2"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Отображаемое имя</Label>
+                        <Input
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="Ваше имя"
+                        />
+                      </div>
+                      <Button 
+                        onClick={async () => {
+                          try {
+                            await fetch(API.users, {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'X-User-Id': String(currentUser.id),
+                              },
+                              body: JSON.stringify({
+                                display_name: displayName,
+                                avatar: avatar,
+                              }),
+                            });
+                            setCurrentUser({ ...currentUser, display_name: displayName, avatar });
+                            localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, display_name: displayName, avatar }));
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        Сохранить изменения
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
                 <Card>
                   <CardContent className="p-6 space-y-6">
                     <div>
