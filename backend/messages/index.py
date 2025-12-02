@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Send and retrieve messages between users
+    Business: Send, retrieve and delete messages between users
     Args: event with httpMethod, body, headers
     Returns: HTTP response with messages or status
     '''
@@ -16,7 +16,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
                 'Access-Control-Max-Age': '86400'
             },
@@ -115,6 +115,29 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                         'body': json.dumps({'chats': chats})
                     }
+            
+            elif method == 'DELETE':
+                query_params = event.get('queryStringParameters') or {}
+                message_id = query_params.get('messageId')
+                
+                if not message_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Message ID required'})
+                    }
+                
+                cur.execute(
+                    "DELETE FROM messages WHERE id = %s AND sender_id = %s",
+                    (int(message_id), user_id)
+                )
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'status': 'message deleted'})
+                }
             
             elif method == 'POST':
                 body_data = json.loads(event.get('body', '{}'))

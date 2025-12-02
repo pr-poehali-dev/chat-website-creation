@@ -290,6 +290,23 @@ export default function Index() {
     }
   };
 
+  const deleteMessage = async (messageId: number) => {
+    if (!currentUser || !selectedChat) return;
+    
+    try {
+      await fetch(`${API.messages}?messageId=${messageId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-User-Id': String(currentUser.id),
+        },
+      });
+      loadMessages(selectedChat);
+      loadChats();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
@@ -551,13 +568,21 @@ export default function Index() {
                     const isImage = msg.message_text.startsWith('data:image/');
                     return (
                       <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[70%] ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-2xl px-4 py-2`}>
+                        <div className={`group relative max-w-[70%] ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-2xl px-4 py-2`}>
                           {isImage ? (
                             <img src={msg.message_text} alt="Изображение" className="rounded-lg max-w-full" />
                           ) : (
                             <p>{msg.message_text}</p>
                           )}
                           <span className="text-xs opacity-70">{new Date(msg.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}</span>
+                          {isOwn && (
+                            <button
+                              onClick={() => deleteMessage(msg.id)}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden group-hover:flex"
+                            >
+                              <Icon name="Trash2" size={14} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
