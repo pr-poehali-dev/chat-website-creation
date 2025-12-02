@@ -65,6 +65,7 @@ export default function Index() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [notifications, setNotifications] = useState({
     messages: true,
     mentions: true,
@@ -512,6 +513,24 @@ export default function Index() {
                       </button>
                     </div>
                   )}
+                  {showEmojiPicker && (
+                    <div className="mb-2 p-3 bg-muted rounded-lg">
+                      <div className="grid grid-cols-8 gap-2">
+                        {['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '😶‍🌫️', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👋', '🤚', '🖐', '✋', '🖖', '👏', '🙌', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '🔥', '✨', '🌟', '⭐', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉'].map((emoji) => (
+                          <button
+                            key={emoji}
+                            onClick={() => {
+                              setNewMessage(newMessage + emoji);
+                              setShowEmojiPicker(false);
+                            }}
+                            className="text-2xl hover:scale-125 transition-transform"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <input
                       type="file"
@@ -535,6 +554,13 @@ export default function Index() {
                       variant="outline"
                     >
                       <Icon name="Image" size={20} />
+                    </Button>
+                    <Button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      size="icon"
+                      variant="outline"
+                    >
+                      <Icon name="Smile" size={20} />
                     </Button>
                     <Input
                       value={newMessage}
