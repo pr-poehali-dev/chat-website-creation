@@ -64,6 +64,7 @@ export default function Index() {
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [notifications, setNotifications] = useState({
     messages: true,
     mentions: true,
@@ -184,8 +185,11 @@ export default function Index() {
   };
 
   const sendMessage = async () => {
-    if (!currentUser || !selectedChat || !newMessage.trim()) return;
+    if (!currentUser || !selectedChat) return;
+    if (!newMessage.trim() && !selectedImage) return;
+    
     try {
+      const messageContent = selectedImage || newMessage;
       await fetch(API.messages, {
         method: 'POST',
         headers: {
@@ -194,10 +198,11 @@ export default function Index() {
         },
         body: JSON.stringify({
           receiver_id: selectedChat,
-          message_text: newMessage,
+          message_text: messageContent,
         }),
       });
       setNewMessage('');
+      setSelectedImage(null);
       loadMessages(selectedChat);
       loadChats();
     } catch (err) {
@@ -479,10 +484,15 @@ export default function Index() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {messages.map((msg) => {
                     const isOwn = msg.sender_id === currentUser.id;
+                    const isImage = msg.message_text.startsWith('data:image/');
                     return (
                       <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[70%] ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-2xl px-4 py-2`}>
-                          <p>{msg.message_text}</p>
+                          {isImage ? (
+                            <img src={msg.message_text} alt="Изображение" className="rounded-lg max-w-full" />
+                          ) : (
+                            <p>{msg.message_text}</p>
+                          )}
                           <span className="text-xs opacity-70">{new Date(msg.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
@@ -491,7 +501,41 @@ export default function Index() {
                 </div>
 
                 <div className="border-t border-border p-4">
+                  {selectedImage && (
+                    <div className="mb-2 relative inline-block">
+                      <img src={selectedImage} alt="Предпросмотр" className="rounded-lg max-h-32" />
+                      <button
+                        onClick={() => setSelectedImage(null)}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                      >
+                        <Icon name="X" size={14} />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setSelectedImage(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <Button
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      size="icon"
+                      variant="outline"
+                    >
+                      <Icon name="Image" size={20} />
+                    </Button>
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
