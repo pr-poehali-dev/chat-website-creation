@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Get chats list",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "chats": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
