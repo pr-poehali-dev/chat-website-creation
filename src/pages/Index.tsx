@@ -52,6 +52,7 @@ export default function Index() {
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [avatar, setAvatar] = useState('👤');
   const [error, setError] = useState('');
@@ -113,6 +114,12 @@ export default function Index() {
 
   const handleAuth = async () => {
     setError('');
+    
+    if (!isLogin && !phone) {
+      setError('Укажите номер телефона');
+      return;
+    }
+    
     try {
       const res = await fetch(API.auth, {
         method: 'POST',
@@ -121,6 +128,7 @@ export default function Index() {
           action: isLogin ? 'login' : 'register',
           username,
           password,
+          phone: phone || undefined,
           display_name: displayName || username,
           avatar,
         }),
@@ -242,6 +250,15 @@ export default function Index() {
               </div>
               {!isLogin && (
                 <>
+                  <div>
+                    <Label>Номер телефона</Label>
+                    <Input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+7 (999) 123-45-67"
+                    />
+                  </div>
                   <div>
                     <Label>Отображаемое имя</Label>
                     <Input
@@ -549,6 +566,12 @@ export default function Index() {
                         <p className="text-sm text-muted-foreground">Статус</p>
                         <p className="font-medium">{currentUser.status}</p>
                       </div>
+                      {(currentUser as any).phone && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Телефон</p>
+                          <p className="font-medium">{(currentUser as any).phone}</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

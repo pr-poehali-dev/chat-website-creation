@@ -51,6 +51,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if action == 'register':
                 display_name = body_data.get('display_name', username)
                 avatar = body_data.get('avatar', '👤')
+                phone = body_data.get('phone', '').strip()
+                
+                if not phone:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Phone number required'})
+                    }
                 
                 cur.execute("SELECT id FROM users WHERE username = %s", (username,))
                 if cur.fetchone():
@@ -60,9 +68,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Username already exists'})
                     }
                 
+                cur.execute("SELECT id FROM users WHERE phone = %s", (phone,))
+                if cur.fetchone():
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Phone number already registered'})
+                    }
+                
                 cur.execute(
-                    "INSERT INTO users (username, password_hash, display_name, avatar) VALUES (%s, %s, %s, %s) RETURNING id, username, display_name, avatar, status",
-                    (username, password_hash, display_name, avatar)
+                    "INSERT INTO users (username, password_hash, display_name, avatar, phone) VALUES (%s, %s, %s, %s, %s) RETURNING id, username, display_name, avatar, status, phone",
+                    (username, password_hash, display_name, avatar, phone)
                 )
                 user = cur.fetchone()
                 conn.commit()
@@ -76,14 +92,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'username': user[1],
                             'display_name': user[2],
                             'avatar': user[3],
-                            'status': user[4]
+                            'status': user[4],
+                            'phone': user[5]
                         }
                     })
                 }
             
             elif action == 'login':
                 cur.execute(
-                    "SELECT id, username, display_name, avatar, status FROM users WHERE username = %s AND password_hash = %s",
+                    "SELECT id, username, display_name, avatar, status, phone FROM users WHERE username = %s AND password_hash = %s",
                     (username, password_hash)
                 )
                 user = cur.fetchone()
@@ -104,7 +121,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'username': user[1],
                             'display_name': user[2],
                             'avatar': user[3],
-                            'status': user[4]
+                            'status': user[4],
+                            'phone': user[5]
                         }
                     })
                 }

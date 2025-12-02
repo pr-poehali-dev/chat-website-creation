@@ -1,15 +1,13 @@
 {
   "tests": [
     {
-      "name": "Register new user",
+      "name": "Login existing user",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "register",
+        "action": "login",
         "username": "testuser",
-        "password": "testpass123",
-        "display_name": "Test User",
-        "avatar": "🧪"
+        "password": "testpass123"
       },
       "expectedStatus": 200,
       "expectedBody": {
