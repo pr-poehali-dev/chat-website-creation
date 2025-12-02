@@ -240,11 +240,31 @@ export default function Index() {
                 {isLogin ? 'Войти' : 'Зарегистрироваться'}
               </Button>
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
                 className="w-full text-sm text-muted-foreground hover:text-foreground"
               >
                 {isLogin ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
               </button>
+              
+              {!isLogin && (
+                <div className="pt-4 border-t">
+                  <p className="text-xs text-muted-foreground text-center mb-2">Быстрая регистрация:</p>
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {['🎨', '🚀', '📚', '💼', '🎭', '⚡', '🌟', '🎯'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => setAvatar(emoji)}
+                        className="w-10 h-10 text-2xl hover:scale-110 transition-transform"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
