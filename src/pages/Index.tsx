@@ -66,6 +66,7 @@ export default function Index() {
   const [newMessage, setNewMessage] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [newContactPhone, setNewContactPhone] = useState('');
   const [notifications, setNotifications] = useState({
     messages: true,
     mentions: true,
@@ -822,11 +823,33 @@ export default function Index() {
                     <Button 
                       onClick={() => document.getElementById('contacts-upload')?.click()}
                       variant="outline"
-                      className="w-full"
+                      className="w-full mb-4"
                     >
                       <Icon name="Upload" size={20} className="mr-2" />
                       Загрузить контакты
                     </Button>
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-medium mb-2">Добавить вручную</p>
+                      <div className="flex gap-2">
+                        <Input
+                          type="tel"
+                          value={newContactPhone}
+                          onChange={(e) => setNewContactPhone(e.target.value)}
+                          placeholder="+7 (999) 123-45-67"
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={() => {
+                            if (newContactPhone.trim()) {
+                              syncContacts([newContactPhone.replace(/[\s()-]/g, '')]);
+                              setNewContactPhone('');
+                            }
+                          }}
+                        >
+                          <Icon name="Plus" size={20} />
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 <Card>
