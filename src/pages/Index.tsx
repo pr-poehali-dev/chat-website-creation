@@ -100,6 +100,15 @@ export default function Index() {
     }
   }, [currentUser, activeTab]);
 
+  useEffect(() => {
+    if (activeTab === 'search' && currentUser) {
+      const timer = setTimeout(() => {
+        loadUsers(searchQuery);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, activeTab, currentUser]);
+
   const handleAuth = async () => {
     setError('');
     try {
@@ -285,15 +294,6 @@ export default function Index() {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (activeTab === 'search' && currentUser) {
-      const timer = setTimeout(() => {
-        loadUsers(searchQuery);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [searchQuery, activeTab]);
 
   const filteredUsers = users;
 
