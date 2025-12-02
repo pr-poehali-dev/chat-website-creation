@@ -67,6 +67,7 @@ export default function Index() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [newContactPhone, setNewContactPhone] = useState('');
+  const [myContacts, setMyContacts] = useState<any[]>([]);
   const [notifications, setNotifications] = useState({
     messages: true,
     mentions: true,
@@ -84,6 +85,7 @@ export default function Index() {
     if (currentUser) {
       loadChats();
       loadUsers();
+      loadMyContacts();
       updateOnlineStatus();
       const interval = setInterval(() => {
         updateOnlineStatus();
@@ -190,8 +192,45 @@ export default function Index() {
           'Content-Type': 'application/json',
           'X-User-Id': String(currentUser.id),
         },
-        body: JSON.stringify({ contacts }),
+        body: JSON.stringify({ action: 'add_contacts', contacts }),
       });
+      loadUsers();
+      loadMyContacts();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadMyContacts = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(API.users, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(currentUser.id),
+        },
+        body: JSON.stringify({ action: 'get_contacts' }),
+      });
+      const data = await res.json();
+      setMyContacts(data.contacts || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteContact = async (contactId: number) => {
+    if (!currentUser) return;
+    try {
+      await fetch(API.users, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(currentUser.id),
+        },
+        body: JSON.stringify({ action: 'delete_contact', contact_id: contactId }),
+      });
+      loadMyContacts();
       loadUsers();
     } catch (err) {
       console.error(err);
@@ -828,7 +867,7 @@ export default function Index() {
                       <Icon name="Upload" size={20} className="mr-2" />
                       Загрузить контакты
                     </Button>
-                    <div className="border-t pt-4">
+                    <div className="border-t pt-4 mb-4">
                       <p className="text-sm font-medium mb-2">Добавить вручную</p>
                       <div className="flex gap-2">
                         <Input
@@ -850,6 +889,43 @@ export default function Index() {
                         </Button>
                       </div>
                     </div>
+                    {myContacts.length > 0 && (
+                      <div className="border-t pt-4">
+                        <p className="text-sm font-medium mb-3">Мои контакты ({myContacts.length})</p>
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {myContacts.map((contact) => (
+                            <div key={contact.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
+                              {contact.user_id ? (
+                                <>
+                                  <Avatar className="w-10 h-10">
+                                    <AvatarFallback>{contact.avatar}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate">{contact.name}</p>
+                                    <p className="text-xs text-muted-foreground">{contact.phone}</p>
+                                  </div>
+                                  {contact.online && (
+                                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="flex-1">
+                                  <p className="text-sm">{contact.phone}</p>
+                                  <p className="text-xs text-muted-foreground">Не зарегистрирован</p>
+                                </div>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteContact(contact.id)}
+                              >
+                                <Icon name="Trash2" size={16} />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>

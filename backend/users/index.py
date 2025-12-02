@@ -43,21 +43,77 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     if method == 'POST' and user_id:
         body_data = json.loads(event.get('body', '{}'))
-        contacts = body_data.get('contacts', [])
+        action = body_data.get('action')
         
         dsn = os.environ.get('DATABASE_URL')
-        with psycopg2.connect(dsn) as conn:
-            with conn.cursor() as cur:
-                for phone in contacts:
+        
+        if action == 'add_contacts':
+            contacts = body_data.get('contacts', [])
+            with psycopg2.connect(dsn) as conn:
+                with conn.cursor() as cur:
+                    for phone in contacts:
+                        cur.execute(
+                            "INSERT INTO contacts (user_id, contact_phone) VALUES (%s, %s) ON CONFLICT (user_id, contact_phone) DO NOTHING",
+                            (int(user_id), phone)
+                        )
+                    conn.commit()
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'status': 'contacts synced'})
+            }
+        
+        elif action == 'get_contacts':
+            with psycopg2.connect(dsn) as conn:
+                with conn.cursor() as cur:
                     cur.execute(
-                        "INSERT INTO contacts (user_id, contact_phone) VALUES (%s, %s) ON CONFLICT (user_id, contact_phone) DO NOTHING",
-                        (int(user_id), phone)
+                        """
+                        SELECT c.id, c.contact_phone, u.id, u.display_name, u.avatar, u.is_online
+                        FROM contacts c
+                        LEFT JOIN users u ON u.phone = c.contact_phone
+                        WHERE c.user_id = %s
+                        ORDER BY u.display_name NULLS LAST, c.contact_phone
+                        """,
+                        (int(user_id),)
                     )
-                conn.commit()
+                    contacts_list = []
+                    for row in cur.fetchall():
+                        contact = {
+                            'id': row[0],
+                            'phone': row[1],
+                        }
+                        if row[2]:
+                            contact['user_id'] = row[2]
+                            contact['name'] = row[3]
+                            contact['avatar'] = row[4]
+                            contact['online'] = row[5]
+                        contacts_list.append(contact)
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'contacts': contacts_list})
+                    }
+        
+        elif action == 'delete_contact':
+            contact_id = body_data.get('contact_id')
+            with psycopg2.connect(dsn) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "DELETE FROM contacts WHERE id = %s AND user_id = %s",
+                        (int(contact_id), int(user_id))
+                    )
+                    conn.commit()
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'status': 'contact deleted'})
+            }
+        
         return {
-            'statusCode': 200,
+            'statusCode': 400,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'status': 'contacts synced'})
+            'body': json.dumps({'error': 'Invalid action'})
         }
     
     if method != 'GET':
